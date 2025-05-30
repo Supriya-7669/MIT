@@ -1,2 +1,2 @@
-# MIT
+# MIT_task1
 This repository contains the tasks i've been completed in the MICRO INFORMATION TECHNOLOGY  as a web development intern !
