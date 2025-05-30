@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tic Tac Toe with AI</title>
+  <style>
+    body {
+      background: linear-gradient(to bottom, #a0c4ff, #dfe7fd);
+      font-family: 'Arial', sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+    }
+    h1, h2 {
+      color: #333;
+    }
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-gap: 10px;
+      justify-content: center;
+      margin: 20px auto;
+    }
+    .cell {
+      width: 100px;
+      height: 100px;
+      font-size: 2em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #333;
+      background-color: #f0f0f0;
+      cursor: pointer;
+    }
+    .user { color: blue; }
+    .ai { color: red; }
+    .balloon {
+      position: absolute;
+      width: 50px;
+      height: 70px;
+      background: pink;
+      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+      animation: float 4s ease-in-out infinite;
+    }
+    @keyframes float {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-200px); }
+      100% { transform: translateY(0); }
+    }
+    .hidden { display: none; }
+    .mode-btn, .reset-btn {
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 1em;
+      cursor: pointer;
+    }
+    .popup {
+      background: white;
+      padding: 20px;
+      border: 2px solid #000;
+      display: inline-block;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div id="startScreen">
+    <h1>Welcome to Tic Tac Toe!</h1>
+    <input type="text" id="userName" placeholder="Enter your name">
+    <div>
+      <button onclick="startGame('classic')" class="mode-btn">Classic Mode</button>
+      <button onclick="startGame('rush')" class="mode-btn">Rush Mode</button>
+    </div>
+  </div>
+
+  <div id="gameScreen" class="hidden">
+    <h2 id="greeting"></h2>
+    <div class="board" id="board"></div>
+    <div id="result"></div>
+    <button class="reset-btn" onclick="resetGame()">Reset Game</button>
+  </div>
+
+  <script>
+    let board = ["", "", "", "", "", "", "", "", ""];
+    let currentPlayer = "user";
+    let userSymbol = "X";
+    let aiSymbol = "O";
+    let userName = "";
+    let gameMode = "classic";
+    const winCombos = [
+      [0,1,2], [3,4,5], [6,7,8],
+      [0,3,6], [1,4,7], [2,5,8],
+      [0,4,8], [2,4,6]
+    ];
+
+    function startGame(mode) {
+      userName = document.getElementById("userName").value || "Player";
+      gameMode = mode;
+      document.getElementById("startScreen").classList.add("hidden");
+      document.getElementById("gameScreen").classList.remove("hidden");
+      document.getElementById("greeting").innerText = `Hello, ${userName}! Let's play ${mode === 'rush' ? 'Rush' : 'Classic'} Mode`;
+      renderBoard();
+    }
+
+    function renderBoard() {
+      const boardElement = document.getElementById("board");
+      boardElement.innerHTML = "";
+      board.forEach((cell, index) => {
+        const div = document.createElement("div");
+        div.classList.add("cell");
+        if (cell === userSymbol) div.classList.add("user");
+        if (cell === aiSymbol) div.classList.add("ai");
+        div.textContent = cell;
+        div.addEventListener("click", () => handleMove(index));
+        boardElement.appendChild(div);
+      });
+    }
+
+    function handleMove(index) {
+      if (board[index] !== "" || currentPlayer !== "user") return;
+      board[index] = userSymbol;
+      currentPlayer = "ai";
+      renderBoard();
+      if (checkWin(userSymbol)) return endGame(`${userName} wins! 🎉`);
+      if (board.every(cell => cell !== "")) return endGame("It's a draw!");
+      setTimeout(aiMove, gameMode === 'rush' ? 300 : 1000);
+    }
+
+    function aiMove() {
+      let emptyIndexes = board.map((val, i) => val === "" ? i : null).filter(i => i !== null);
+      let move = emptyIndexes[Math.floor(Math.random() * emptyIndexes.length)];
+      board[move] = aiSymbol;
+      currentPlayer = "user";
+      renderBoard();
+      if (checkWin(aiSymbol)) return endGame("Computer wins! 💻🎉");
+      if (board.every(cell => cell !== "")) return endGame("It's a draw!");
+    }
+
+    function checkWin(player) {
+      return winCombos.some(combo => combo.every(i => board[i] === player));
+    }
+
+    function endGame(message) {
+      document.getElementById("result").innerHTML = `<div class='popup'>${message}</div>`;
+      triggerBalloons();
+      document.querySelectorAll('.cell').forEach(cell => cell.style.pointerEvents = 'none');
+    }
+
+    function resetGame() {
+      location.reload();
+    }
+
+    function triggerBalloons() {
+      for (let i = 0; i < 20; i++) {
+        let balloon = document.createElement("div");
+        balloon.classList.add("balloon");
+        balloon.style.left = `${Math.random() * 100}%`;
+        balloon.style.background = `hsl(${Math.random() * 360}, 100%, 75%)`;
+        document.body.appendChild(balloon);
+        setTimeout(() => balloon.remove(), 5000);
+      }
+    }
+  </script>
+</body>
+</html>
